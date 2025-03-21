@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
+import { db } from '../src/config/firebase';
+import { collection, addDoc } from 'firebase/firestore';
 
 export default function ReportScreen() {
   const router = useRouter();
@@ -17,6 +19,23 @@ export default function ReportScreen() {
     'Suspicious Behaviour',
   ];
 
+  //Function to save and store reported crime to firbase
+  async function reportCrime(type) {
+    console.log("🚨 Attempting to report crime:", type);
+    try {
+      const docRef = await addDoc(collection(db, "reports"), {
+        type,
+        timestamp: new Date(),
+      });
+      console.log("✅ Report saved with ID:", docRef.id);
+      Alert.alert("Success", `Reported: ${type}`);
+      router.push('/'); // Navigate back to home after crime reported
+    } catch (error) {
+      console.error("❌ Firestore error:", error);
+      Alert.alert("Error", "Failed to report crime.");
+    }
+  }
+
   return (
     <View style={styles.container}>
       {/* Top Header */}
@@ -30,7 +49,11 @@ export default function ReportScreen() {
       {/* Crime Buttons Grid */}
       <View style={styles.grid}>
         {crimes.map((crime, index) => (
-          <TouchableOpacity key={index} style={styles.crimeButton}>
+          <TouchableOpacity
+            key={index}
+            style={styles.crimeButton}
+            onPress={() => reportCrime(crime)} 
+          >
             <Text style={styles.crimeText}>{crime}</Text>
           </TouchableOpacity>
         ))}
@@ -71,7 +94,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   crimeButton: {
-    backgroundColor: '#7F8C8D', // Grey color
+    backgroundColor: '#7F8C8D',
     width: 150,
     height: 100,
     justifyContent: 'center',
