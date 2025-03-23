@@ -26,25 +26,11 @@ export default function ReportScreen() {
   };
 
   async function reportCrime(type) {
-    if (!selectedLocation) {
-
-      /* console.log("🚨 Attempting to report crime:", type);
-    try {
-      const docRef = await addDoc(collection(db, "reports"), {
-        type,
-        timestamp: new Date(),
-      });
-      console.log("✅ Report saved with ID:", docRef.id);
-      Alert.alert("Success", `Reported: ${type}`);
-      router.push('/'); // Navigate back to home after crime reported
-    } catch (error) {
-      console.error("❌ Firestore error:", error);
-      Alert.alert("Error", "Failed to report crime.");
-    }*/
-
-      Alert.alert("Select a location", "Please tap on the map where the incident occurred.");
-      return;
-    }
+      // 🔻 Add this validation at the top
+  if (!selectedLocation || !selectedLocation.latitude || !selectedLocation.longitude) {
+    Alert.alert("Error", "Please select a valid location.");
+    return;
+  }
 
     try {
       const docRef = await addDoc(collection(db, "reports"), {
