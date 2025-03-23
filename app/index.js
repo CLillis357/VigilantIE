@@ -16,6 +16,7 @@ import { collection, getDocs } from 'firebase/firestore';
 export default function HomeScreen() {
   const router = useRouter();
   const [crimeReports, setCrimeReports] = useState([]);
+  const [mapReady, setMapReady] = useState(false); // ✅ added
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -26,6 +27,7 @@ export default function HomeScreen() {
           ...doc.data(),
         }));
         setCrimeReports(reports);
+        setMapReady((prev) => !prev); // ✅ toggle to force MapView re-render
       } catch (error) {
         console.error('❌ Failed to fetch reports:', error);
         Alert.alert('Error', 'Failed to load crime reports.');
@@ -39,6 +41,7 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <MapView
+          key={mapReady} // ✅ force rerender
           style={StyleSheet.absoluteFillObject}
           initialRegion={{
             latitude: 53.283,
