@@ -57,9 +57,10 @@ export default function HomeScreen() {
 
       {/* Top Buttons */}
       <View style={styles.topButtons}>
-        <TouchableOpacity style={styles.assistanceButton}>
+      <TouchableOpacity style={styles.assistanceButton} onPress={() => router.push('/ImmediateAssist/assistance')}>
           <Text style={styles.buttonText}>Immediate Assistance Info</Text>
         </TouchableOpacity>
+        
         <TouchableOpacity style={styles.reportButton} onPress={() => router.push('/report')}>
           <Text style={styles.buttonText}>Report</Text>
         </TouchableOpacity>
