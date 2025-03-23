@@ -11,12 +11,11 @@ import {
 import MapView, { Marker } from 'react-native-maps';
 import { useRouter } from 'expo-router';
 import { db } from '../src/config/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
 export default function HomeScreen() {
   const router = useRouter();
   const [crimeReports, setCrimeReports] = useState([]);
-  const [mapReady, setMapReady] = useState(false); // ✅ added
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -27,7 +26,6 @@ export default function HomeScreen() {
           ...doc.data(),
         }));
         setCrimeReports(reports);
-        setMapReady((prev) => !prev); // ✅ toggle to force MapView re-render
       } catch (error) {
         console.error('❌ Failed to fetch reports:', error);
         Alert.alert('Error', 'Failed to load crime reports.');
@@ -36,12 +34,35 @@ export default function HomeScreen() {
 
     fetchReports();
   }, []);
+  const handleDeleteCrime = (crime) => {
+    Alert.alert(
+      'Delete Report',
+      `Are you sure you want to delete "${crime.type}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteDoc(doc(db, 'reports', crime.id));
+              setCrimeReports((prev) => prev.filter((c) => c.id !== crime.id));
+              Alert.alert('Deleted', 'Crime report removed.');
+            } catch (error) {
+              console.error('Failed to delete:', error);
+              Alert.alert('Error', 'Failed to delete report.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <MapView
-          key={mapReady} // ✅ force rerender
           style={StyleSheet.absoluteFillObject}
           initialRegion={{
             latitude: 53.283,
@@ -58,7 +79,7 @@ export default function HomeScreen() {
                 longitude: crime.longitude,
               }}
               title={crime.type || crime.title}
-              description="Crime Alert"
+              description="Tap to delete" onCalloutPress={() => handleDeleteCrime(crime)}
             >
               <View style={styles.marker}>
                 <Text style={styles.markerText}>⚠️</Text>
