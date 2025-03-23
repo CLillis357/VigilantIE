@@ -1,25 +1,38 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { useRouter } from 'expo-router';
+import { db } from '../src/config/firebase';
+import { collection, getDocs } from 'firebase/firestore';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const [crimeReports, setCrimeReports] = useState([]);
 
-  // Sample crime data (replace with real data later)
-  const crimeReports = [
-    { id: 1, latitude: 53.283, longitude: -9.038, title: 'Incident 1' },
-    { id: 2, latitude: 53.279, longitude: -9.044, title: 'Incident 2' },
-    { id: 3, latitude: 53.275, longitude: -9.050, title: 'Incident 3' },
-  ];
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const snapshot = await getDocs(collection(db, 'reports'));
+        const reports = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setCrimeReports(reports);
+      } catch (error) {
+        console.error('❌ Failed to fetch reports:', error);
+        Alert.alert('Error', 'Failed to load crime reports.');
+      }
+    };
+
+    fetchReports();
+  }, []);
 
   return (
     <View style={styles.container}>
-      {/* Google Map */}
       <MapView
         style={styles.map}
         initialRegion={{
-          latitude: 53.283, // Default location
+          latitude: 53.283,
           longitude: -9.038,
           latitudeDelta: 0.05,
           longitudeDelta: 0.05,
@@ -28,8 +41,11 @@ export default function HomeScreen() {
         {crimeReports.map((crime) => (
           <Marker
             key={crime.id}
-            coordinate={{ latitude: crime.latitude, longitude: crime.longitude }}
-            title={crime.title}
+            coordinate={{
+              latitude: crime.latitude,
+              longitude: crime.longitude,
+            }}
+            title={crime.type || crime.title}
             description="Crime Alert"
           >
             <View style={styles.marker}>
@@ -44,7 +60,7 @@ export default function HomeScreen() {
         <TouchableOpacity style={styles.assistanceButton}>
           <Text style={styles.buttonText}>Immediate Assistance Info</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.reportButton} onPress={() => router.push('report')}>
+        <TouchableOpacity style={styles.reportButton} onPress={() => router.push('/report')}>
           <Text style={styles.buttonText}>Report</Text>
         </TouchableOpacity>
       </View>
@@ -70,8 +86,6 @@ const styles = StyleSheet.create({
   map: { flex: 1 },
   marker: { backgroundColor: 'yellow', padding: 5, borderRadius: 10 },
   markerText: { fontSize: 16 },
-
-  // Top Buttons
   topButtons: {
     position: 'absolute',
     top: 40,
@@ -83,8 +97,6 @@ const styles = StyleSheet.create({
   assistanceButton: { backgroundColor: 'blue', padding: 10, borderRadius: 8 },
   reportButton: { backgroundColor: 'brown', padding: 10, borderRadius: 8 },
   buttonText: { color: 'white', fontWeight: 'bold' },
-
-  // Bottom Menu
   bottomMenu: {
     position: 'absolute',
     bottom: 10,

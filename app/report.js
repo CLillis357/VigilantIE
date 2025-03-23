@@ -54,7 +54,11 @@ export default function ReportScreen() {
         timestamp: new Date(),
       });
       Alert.alert("Reported", `Crime: ${type} has been submitted.`);
-      router.push('/');
+      //Passes the report to the home page
+      router.push({
+        pathname: '/',
+        params: { crime: type },
+      });
     } catch (error) {
       console.error("Error saving report:", error);
       Alert.alert("Error", "Failed to report crime.");
