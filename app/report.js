@@ -28,18 +28,22 @@ export default function ReportScreen() {
     'Suspicious Behaviour',
   ];
 
+  // Get coordinates from map tap and store as selected location
   const handleMapPress = (event) => {
     const { latitude, longitude } = event.nativeEvent.coordinate;
     setSelectedLocation({ latitude, longitude });
   };
 
+  // Submit crime report with type and selected coordinates
   async function reportCrime(type) {
+    // Validate that a location was selected before submitting
     if (!selectedLocation || !selectedLocation.latitude || !selectedLocation.longitude) {
       Alert.alert('Error', 'Please select a valid location.');
       return;
     }
 
     try {
+      // Add report to Firestore with crime type and location
       await addDoc(collection(db, 'reports'), {
         type,
         latitude: selectedLocation.latitude,
@@ -48,7 +52,7 @@ export default function ReportScreen() {
       });
 
       Alert.alert('Reported', `Crime: ${type} has been submitted.`);
-      router.push('/');
+      router.replace('/HomeScreen');
     } catch (error) {
       console.error('Error saving report:', error);
       Alert.alert('Error', 'Failed to report crime.');
