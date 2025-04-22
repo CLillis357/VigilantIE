@@ -13,6 +13,21 @@ import { useRouter } from 'expo-router';
 import { db } from '../src/config/firebase';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
+const getEmojiForCrime = (crimeType) => {
+  switch (crimeType) {
+    case 'Theft': return '💰';
+    case 'Breaking & Entering': return '🏠';
+    case 'Harassment': return '🗣️';
+    case 'Assault': return '👊';
+    case 'Antisocial Behaviour': return '🤬';
+    case 'Vandalism': return '🧱';
+    case 'Animal Abuse': return '🐾';
+    case 'Suspicious Behaviour': return '🕵️';
+    default: return '⚠️';
+  }
+};
+
+
 export default function HomeScreen() {
   const [crimeReports, setCrimeReports] = useState([]);
   const router = useRouter();
@@ -56,20 +71,26 @@ export default function HomeScreen() {
         }}
       >
         {crimeReports.map((crime) => (
-          <Marker
-            key={crime.id}
-            coordinate={{
-              latitude: crime.latitude,
-              longitude: crime.longitude,
-            }}
-            title={crime.crimeType}
-            description={`Reported by ${crime.user || 'anonymous'}`}
-            onCalloutPress={() => deleteReport(crime.id)}
-          />
-        ))}
+  <Marker
+    key={crime.id}
+    coordinate={{
+      latitude: crime.latitude,
+      longitude: crime.longitude,
+    }}
+    title={`${getEmojiForCrime(crime.type)} ${crime.type}`}
+    description={`Tap here to remove this report.`}
+    onCalloutPress={() => deleteReport(crime.id)} 
+  >
+    <View style={{ backgroundColor: 'white', padding: 6, borderRadius: 20 }}>
+      <Text style={{ fontSize: 20 }}>
+        {getEmojiForCrime(crime.type) || '❓'}
+      </Text>
+    </View>
+  </Marker>
+))}
+
       </MapView>
 
-      
 
       <View style={styles.topButtons}>
         <TouchableOpacity
