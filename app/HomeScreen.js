@@ -16,8 +16,9 @@ import { db, auth } from '../src/config/firebase';
 import { signOut } from 'firebase/auth';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
+// Utility function to calculate the distance between two coordinates in kilometers
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-  const R = 6371;
+  const R = 6371; // Radius of the Earth in kilometers
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
@@ -31,30 +32,36 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
 }
 
 export default function HomeScreen() {
+  const router = useRouter(); // Navigation hook from Expo Router
+
+  // Function to handle user logout
   const handleLogout = async () => {
     try {
-      await signOut(auth);
-      router.replace('/Auth/AuthLanding');
+      await signOut(auth); // Sign out the user
+      router.replace('/Auth/AuthLanding'); // Redirect to the authentication landing page
     } catch (error) {
-      Alert.alert('Logout Error', error.message);
+      Alert.alert('Logout Error', error.message); // Show an error alert if logout fails
     }
   };
-  const [crimeReports, setCrimeReports] = useState([]);
-  const [selectedCrimeType, setSelectedCrimeType] = useState('All');
-  const [showFilter, setShowFilter] = useState(false);
-  const [selectedTimeRange, setSelectedTimeRange] = useState('All Time');
-  const [showTimeMenu, setShowTimeMenu] = useState(false);  
-  const [currentLocation, setCurrentLocation] = useState(null);
-  const [showUserFeed, setShowUserFeed] = useState(false);
 
-  const mapRef = useRef(null);
-  const router = useRouter();
+  // State variables
+  const [crimeReports, setCrimeReports] = useState([]); // List of crime reports
+  const [selectedCrimeType, setSelectedCrimeType] = useState('All'); // Filter for crime type
+  const [showFilter, setShowFilter] = useState(false); // Toggle for crime type filter menu
+  const [selectedTimeRange, setSelectedTimeRange] = useState('All Time'); // Filter for time range
+  const [showTimeMenu, setShowTimeMenu] = useState(false); // Toggle for time range menu
+  const [currentLocation, setCurrentLocation] = useState(null); // User's current location
+  const [showUserFeed, setShowUserFeed] = useState(false); // Toggle for showing user-specific reports
 
+  const mapRef = useRef(null); // Reference to the MapView component
+
+  // Fetch crime reports and user location when the component mounts
   useEffect(() => {
     fetchCrimeReports();
     getCurrentUserLocation();
   }, []);
 
+  // Alert the user if there are nearby crimes
   useEffect(() => {
     if (!currentLocation || crimeReports.length === 0) return;
 
@@ -76,6 +83,7 @@ export default function HomeScreen() {
     }
   }, [currentLocation, crimeReports]);
 
+  // Fetch crime reports from the Firestore database
   const fetchCrimeReports = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, 'reports'));
@@ -89,6 +97,7 @@ export default function HomeScreen() {
     }
   };
 
+  // Get the user's current location
   const getCurrentUserLocation = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status === 'granted') {
@@ -97,6 +106,7 @@ export default function HomeScreen() {
     }
   };
 
+  // Center the map on the user's current location
   const centerMapOnUser = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -117,6 +127,7 @@ export default function HomeScreen() {
     }
   };
 
+  // Delete a crime report from the database
   const deleteReport = async (id) => {
     try {
       await deleteDoc(doc(db, 'reports', id));
@@ -127,6 +138,7 @@ export default function HomeScreen() {
     }
   };
 
+  // Get an emoji representation for a crime type
   const getEmojiForCrime = (crimeType) => {
     switch (crimeType) {
       case 'Theft': return '💰';
@@ -145,6 +157,7 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar style="light" backgroundColor="transparent" translucent />
 
+      {/* Dropdown menu for time range selection */}
       {showTimeMenu && (
         <View style={styles.dropdown}>
           {['All Time', 'Last Hour', 'Today', 'This Week'].map((range, i) => (
@@ -162,16 +175,25 @@ export default function HomeScreen() {
         </View>
       )}
 
+      {/* MapView displaying the user's location and crime reports */}
       <MapView
         ref={mapRef}
         style={styles.map}
-        initialRegion={{
-          latitude: 53.283,
-          longitude: -9.038,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
-        }}
+        initialRegion={
+          currentLocation ? {
+            latitude: currentLocation.latitude,
+            longitude: currentLocation.longitude,
+            latitudeDelta: 0.05,
+            longitudeDelta: 0.05,
+          } : {
+            latitude: 53.283, // fallback if location isn't ready
+            longitude: -9.038,
+            latitudeDelta: 0.05,
+            longitudeDelta: 0.05,
+          }
+        }
       >
+        {/* Marker for the user's current location */}
         {currentLocation && (
           <Marker
             coordinate={currentLocation}
@@ -180,6 +202,7 @@ export default function HomeScreen() {
           />
         )}
 
+        {/* Markers for crime reports */}
         {crimeReports
           .filter(crime => selectedCrimeType === 'All' || crime.type === selectedCrimeType)
           .filter(crime =>
@@ -211,6 +234,7 @@ export default function HomeScreen() {
           ))}
       </MapView>
 
+      {/* Dropdown menu for crime type filter */}
       {showFilter && (
         <View style={styles.dropdown}>
           {['All', 'Theft', 'Breaking & Entering', 'Harassment', 'Assault', 'Antisocial Behaviour', 'Vandalism', 'Animal Abuse', 'Suspicious Behaviour'].map((type, index) => (
@@ -228,6 +252,7 @@ export default function HomeScreen() {
         </View>
       )}
 
+      {/* Top buttons for navigation */}
       <View style={styles.topButtons}>
         <TouchableOpacity
           style={styles.assistanceButton}
@@ -242,15 +267,18 @@ export default function HomeScreen() {
           <Text style={styles.buttonText}>Report</Text>
         </TouchableOpacity>
       </View>
-
+     
+      {/* Logout button */}
       <TouchableOpacity style={styles.logoutFab} onPress={handleLogout}>
         <Text style={{ color: 'white', fontSize: 18 }}>🚪</Text>
       </TouchableOpacity>
 
+      {/* Refresh button */}
       <TouchableOpacity style={styles.refreshFab} onPress={fetchCrimeReports}>
         <Text style={{ color: 'white', fontSize: 18 }}>🔄</Text>
       </TouchableOpacity>
 
+      {/* Bottom menu for additional actions */}
       <View style={styles.bottomMenu}>
         <TouchableOpacity style={styles.menuButton} onPress={() => setShowTimeMenu(prev => !prev)}>
           <Text style={styles.menuText}>{selectedTimeRange} ▼</Text>
@@ -267,6 +295,7 @@ export default function HomeScreen() {
   );
 }
 
+// Styles for the components
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
   map: { flex: 1 },

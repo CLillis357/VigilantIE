@@ -102,7 +102,7 @@ export default function ReportScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: 'white' },
+  safeArea: {backgroundColor: 'red', flex: 1},
   scroll: { paddingBottom: 30 },
   header: {
     flexDirection: 'row',
@@ -119,6 +119,8 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     marginRight: 40,
+    
+    
   },
   map: {
     height: 250,
