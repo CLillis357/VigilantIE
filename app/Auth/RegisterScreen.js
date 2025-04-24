@@ -12,7 +12,7 @@ export default function RegisterScreen() {
     const auth = getAuth();
     createUserWithEmailAndPassword(auth, email, password)
       .then(() => {
-        router.replace('/HomeScreen'); // ✅ Send to Home after successful register
+        router.replace('/HomeScreen'); 
       })
       .catch((error) => {
         Alert.alert('Registration Failed', error.message);

@@ -42,12 +42,13 @@ export default function AssistanceScreen() {
 
 const styles = StyleSheet.create({
   container: { padding: 20 },
-  header: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
+  header: { marginTop: 20, fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
   item: {
     backgroundColor: '#e3f2fd',
     padding: 15,
     borderRadius: 8,
     marginBottom: 15,
+    
   },
   title: { fontSize: 18, fontWeight: 'bold' },
   subtitle: { fontSize: 14, color: '#333', marginTop: 5 },

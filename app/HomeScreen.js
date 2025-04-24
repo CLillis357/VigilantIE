@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
@@ -44,7 +43,8 @@ export default function HomeScreen() {
   const [selectedCrimeType, setSelectedCrimeType] = useState('All');
   const [showFilter, setShowFilter] = useState(false);
   const [selectedTimeRange, setSelectedTimeRange] = useState('All Time');
-  const [showTimeMenu, setShowTimeMenu] = useState(false);  const [currentLocation, setCurrentLocation] = useState(null);
+  const [showTimeMenu, setShowTimeMenu] = useState(false);  
+  const [currentLocation, setCurrentLocation] = useState(null);
   const [showUserFeed, setShowUserFeed] = useState(false);
 
   const mapRef = useRef(null);
@@ -54,6 +54,27 @@ export default function HomeScreen() {
     fetchCrimeReports();
     getCurrentUserLocation();
   }, []);
+
+  useEffect(() => {
+    if (!currentLocation || crimeReports.length === 0) return;
+
+    const nearbyCrimes = crimeReports.filter((report) => {
+      const dist = getDistanceFromLatLonInKm(
+        currentLocation.latitude,
+        currentLocation.longitude,
+        report.latitude,
+        report.longitude
+      );
+      return dist <= 0.5; // within 500 meters
+    });
+
+    if (nearbyCrimes.length > 0) {
+      Alert.alert(
+        'Nearby Crime Alert',
+        `⚠️ Caution: ${nearbyCrimes.length} recent report(s) were filed near your location.`
+      );
+    }
+  }, [currentLocation, crimeReports]);
 
   const fetchCrimeReports = async () => {
     try {
@@ -124,7 +145,6 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar style="light" backgroundColor="transparent" translucent />
 
-      
       {showTimeMenu && (
         <View style={styles.dropdown}>
           {['All Time', 'Last Hour', 'Today', 'This Week'].map((range, i) => (
@@ -141,7 +161,6 @@ export default function HomeScreen() {
           ))}
         </View>
       )}
-
 
       <MapView
         ref={mapRef}
@@ -209,7 +228,6 @@ export default function HomeScreen() {
         </View>
       )}
 
-
       <View style={styles.topButtons}>
         <TouchableOpacity
           style={styles.assistanceButton}
@@ -225,13 +243,15 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      
       <TouchableOpacity style={styles.logoutFab} onPress={handleLogout}>
         <Text style={{ color: 'white', fontSize: 18 }}>🚪</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity style={styles.refreshFab} onPress={fetchCrimeReports}>
+        <Text style={{ color: 'white', fontSize: 18 }}>🔄</Text>
+      </TouchableOpacity>
 
-<View style={styles.bottomMenu}>
+      <View style={styles.bottomMenu}>
         <TouchableOpacity style={styles.menuButton} onPress={() => setShowTimeMenu(prev => !prev)}>
           <Text style={styles.menuText}>{selectedTimeRange} ▼</Text>
         </TouchableOpacity>
@@ -287,6 +307,15 @@ const styles = StyleSheet.create({
     bottom: 90,
     right: 20,
     backgroundColor: 'red',
+    borderRadius: 30,
+    padding: 12,
+    elevation: 5,
+  },
+  refreshFab: {
+    position: 'absolute',
+    bottom: 90,
+    left: 20,
+    backgroundColor: 'green',
     borderRadius: 30,
     padding: 12,
     elevation: 5,
