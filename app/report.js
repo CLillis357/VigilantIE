@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   View,
@@ -6,10 +7,11 @@ import {
   TouchableOpacity,
   Alert,
   ScrollView,
-  SafeAreaView,
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { db } from '../src/config/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 
@@ -28,22 +30,18 @@ export default function ReportScreen() {
     'Suspicious Behaviour',
   ];
 
-  // Get coordinates from map tap and store as selected location
   const handleMapPress = (event) => {
     const { latitude, longitude } = event.nativeEvent.coordinate;
     setSelectedLocation({ latitude, longitude });
   };
 
-  // Submit crime report with type and selected coordinates
   async function reportCrime(type) {
-    // Validate that a location was selected before submitting
     if (!selectedLocation || !selectedLocation.latitude || !selectedLocation.longitude) {
       Alert.alert('Error', 'Please select a valid location.');
       return;
     }
 
     try {
-      // Add report to Firestore with crime type and location
       await addDoc(collection(db, 'reports'), {
         type,
         latitude: selectedLocation.latitude,
@@ -60,9 +58,10 @@ export default function ReportScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+      <StatusBar style="light" backgroundColor="transparent" translucent />
+
       <ScrollView contentContainerStyle={styles.scroll}>
-        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
             <Text style={styles.cancelText}>CANCEL</Text>
@@ -70,7 +69,6 @@ export default function ReportScreen() {
           <Text style={styles.headerTitle}>Report</Text>
         </View>
 
-        {/* Map */}
         <MapView
           style={styles.map}
           onPress={handleMapPress}
@@ -86,7 +84,6 @@ export default function ReportScreen() {
           )}
         </MapView>
 
-        {/* Crime Buttons */}
         <View style={styles.grid}>
           {crimes.map((crime, index) => (
             <TouchableOpacity
@@ -120,7 +117,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     flex: 1,
     textAlign: 'center',
-    marginRight: 40, // makes space for centered title
+    marginRight: 40,
   },
   map: {
     height: 250,
