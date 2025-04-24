@@ -12,7 +12,7 @@ import MapView, { Marker } from 'react-native-maps';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { db } from '../src/config/firebase';
+import { db, auth } from '../src/config/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 
 export default function ReportScreen() {
@@ -47,6 +47,7 @@ export default function ReportScreen() {
         latitude: selectedLocation.latitude,
         longitude: selectedLocation.longitude,
         timestamp: new Date(),
+        userId: auth.currentUser?.uid,
       });
 
       Alert.alert('Reported', `Crime: ${type} has been submitted.`);

@@ -13,7 +13,8 @@ import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { db } from '../src/config/firebase';
+import { db, auth } from '../src/config/firebase';
+import { signOut } from 'firebase/auth';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
@@ -31,12 +32,20 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
 }
 
 export default function HomeScreen() {
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      router.replace('/Auth/AuthLanding');
+    } catch (error) {
+      Alert.alert('Logout Error', error.message);
+    }
+  };
   const [crimeReports, setCrimeReports] = useState([]);
   const [selectedCrimeType, setSelectedCrimeType] = useState('All');
   const [showFilter, setShowFilter] = useState(false);
-  const [selectedRadius, setSelectedRadius] = useState(5);
-  const [showRadiusMenu, setShowRadiusMenu] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState(null);
+  const [selectedTimeRange, setSelectedTimeRange] = useState('All Time');
+  const [showTimeMenu, setShowTimeMenu] = useState(false);  const [currentLocation, setCurrentLocation] = useState(null);
+  const [showUserFeed, setShowUserFeed] = useState(false);
 
   const mapRef = useRef(null);
   const router = useRouter();
@@ -115,6 +124,25 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar style="light" backgroundColor="transparent" translucent />
 
+      
+      {showTimeMenu && (
+        <View style={styles.dropdown}>
+          {['All Time', 'Last Hour', 'Today', 'This Week'].map((range, i) => (
+            <TouchableOpacity
+              key={i}
+              style={styles.dropdownItem}
+              onPress={() => {
+                setSelectedTimeRange(range);
+                setShowTimeMenu(false);
+              }}
+            >
+              <Text>{range}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
+
       <MapView
         ref={mapRef}
         style={styles.map}
@@ -125,20 +153,27 @@ export default function HomeScreen() {
           longitudeDelta: 0.05,
         }}
       >
+        {currentLocation && (
+          <Marker
+            coordinate={currentLocation}
+            title="You are here"
+            pinColor="blue"
+          />
+        )}
+
         {crimeReports
-          .filter((crime) =>
-            selectedCrimeType === 'All' || crime.type === selectedCrimeType
-          )
-          .filter((crime) =>
+          .filter(crime => selectedCrimeType === 'All' || crime.type === selectedCrimeType)
+          .filter(crime =>
             currentLocation
               ? getDistanceFromLatLonInKm(
                   currentLocation.latitude,
                   currentLocation.longitude,
                   crime.latitude,
                   crime.longitude
-                ) <= selectedRadius
+                ) 
               : true
           )
+          .filter(crime => !showUserFeed || crime.userId === auth.currentUser?.uid || !crime.userId)
           .map((crime) => (
             <Marker
               key={crime.id}
@@ -174,22 +209,6 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {showRadiusMenu && (
-        <View style={styles.dropdown}>
-          {[1, 5, 10, 25].map((r, i) => (
-            <TouchableOpacity
-              key={i}
-              style={styles.dropdownItem}
-              onPress={() => {
-                setSelectedRadius(r);
-                setShowRadiusMenu(false);
-              }}
-            >
-              <Text>{r} KM</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
 
       <View style={styles.topButtons}>
         <TouchableOpacity
@@ -206,15 +225,22 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.bottomMenu}>
-        <TouchableOpacity style={styles.menuButton} onPress={() => setShowFilter(prev => !prev)}>
-          <Text style={styles.menuText}>{selectedCrimeType === 'All' ? 'Filter ▼' : `${selectedCrimeType} ▼`}</Text>
+      
+      <TouchableOpacity style={styles.logoutFab} onPress={handleLogout}>
+        <Text style={{ color: 'white', fontSize: 18 }}>🚪</Text>
+      </TouchableOpacity>
+
+
+<View style={styles.bottomMenu}>
+        <TouchableOpacity style={styles.menuButton} onPress={() => setShowTimeMenu(prev => !prev)}>
+          <Text style={styles.menuText}>{selectedTimeRange} ▼</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.menuButton} onPress={() => setShowUserFeed(prev => !prev)}>
+          <Text style={styles.menuText}>{showUserFeed ? 'Your Feed 👤' : 'Public Feed 🌍'}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.menuButton} onPress={centerMapOnUser}>
           <Text style={styles.menuText}>📍 My Location</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.menuButton} onPress={() => setShowRadiusMenu(prev => !prev)}>
-          <Text style={styles.menuText}>Radius: {selectedRadius}KM ▼</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -222,10 +248,7 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
+  container: { flex: 1, backgroundColor: '#000' },
   map: { flex: 1 },
   topButtons: {
     position: 'absolute',
@@ -259,6 +282,15 @@ const styles = StyleSheet.create({
   },
   menuButton: { padding: 10 },
   menuText: { fontWeight: 'bold' },
+  logoutFab: {
+    position: 'absolute',
+    bottom: 90,
+    right: 20,
+    backgroundColor: 'red',
+    borderRadius: 30,
+    padding: 12,
+    elevation: 5,
+  },
   dropdown: {
     position: 'absolute',
     bottom: 60,
