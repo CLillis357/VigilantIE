@@ -182,8 +182,8 @@ export default function HomeScreen() {
                 longitude: crime.longitude,
               }}
               title={`${getEmojiForCrime(crime.type)} ${crime.type}`}
-              description={`Tap here to remove this report.`}
-              onCalloutPress={() => deleteReport(crime.id)}
+              description={crime.userId === auth.currentUser?.uid ? 'Tap here to remove this report.' : undefined}
+              onCalloutPress={crime.userId === auth.currentUser?.uid ? () => deleteReport(crime.id) : undefined}
             >
               <View style={{ backgroundColor: 'white', padding: 6, borderRadius: 20 }}>
                 <Text style={{ fontSize: 20 }}>{getEmojiForCrime(crime.type)}</Text>
