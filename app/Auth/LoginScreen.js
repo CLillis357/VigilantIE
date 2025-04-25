@@ -4,39 +4,51 @@ import { signInWithEmailAndPassword, getAuth } from 'firebase/auth';
 import { useRouter } from 'expo-router';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const router = useRouter();
+  const [email, setEmail] = useState(''); // State to store the user's email
+  const [password, setPassword] = useState(''); // State to store the user's password
+  const router = useRouter(); // Navigation hook from Expo Router
 
+  // Function to handle user login
   const handleLogin = () => {
-    const auth = getAuth();
+    const auth = getAuth(); // Get the Firebase Auth instance
     signInWithEmailAndPassword(auth, email, password)
       .then(() => {
-        router.replace('/HomeScreen'); // ✅ Send to Home after successful login
+        // Navigate to the Home screen after successful login
+        router.replace('/HomeScreen');
       })
       .catch((error) => {
+        // Show an alert if login fails
         Alert.alert('Login Failed', error.message);
       });
   };
 
   return (
     <View style={styles.container}>
+      {/* Login Title */}
       <Text style={styles.title}>Login</Text>
+
+      {/* Email Input */}
       <TextInput
         placeholder="Email"
         style={styles.input}
         value={email}
-        autoCapitalize="none"
-        onChangeText={setEmail}
+        autoCapitalize="none" // Disable auto-capitalization for email input
+        onChangeText={setEmail} // Update email state
       />
+
+      {/* Password Input */}
       <TextInput
         placeholder="Password"
         style={styles.input}
         value={password}
-        secureTextEntry
-        onChangeText={setPassword}
+        secureTextEntry // Hide password input
+        onChangeText={setPassword} // Update password state
       />
+
+      {/* Login Button */}
       <Button title="Login" onPress={handleLogin} />
+
+      {/* Link to Register Screen */}
       <Text style={styles.link} onPress={() => router.push('/Auth/RegisterScreen')}>
         Don't have an account? Register
       </Text>
@@ -44,13 +56,29 @@ export default function LoginScreen() {
   );
 }
 
+// Styles for the Login screen
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: '#fff' },
-  title: { fontSize: 24, marginBottom: 24, textAlign: 'center' },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#fff', 
+  },
+  title: {
+    fontSize: 24,
+    marginBottom: 24,
+    textAlign: 'center', 
+  },
   input: {
-    borderWidth: 1, borderColor: '#ccc', padding: 12, marginBottom: 12, borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 12,
+    marginBottom: 12,
+    borderRadius: 8, 
   },
   link: {
-    color: 'blue', textAlign: 'center', marginTop: 16,
+    color: 'blue',
+    textAlign: 'center',
+    marginTop: 16, 
   },
 });

@@ -4,39 +4,48 @@ import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
 import { useRouter } from 'expo-router';
 
 export default function RegisterScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const router = useRouter();
+  const [email, setEmail] = useState(''); // State to store the user's email
+  const [password, setPassword] = useState(''); // State to store the user's password
+  const router = useRouter(); // Navigation hook for routing
 
+  // Function to handle user registration
   const handleRegister = () => {
-    const auth = getAuth();
+    const auth = getAuth(); // Get Firebase Auth instance
     createUserWithEmailAndPassword(auth, email, password)
       .then(() => {
-        router.replace('/HomeScreen'); 
+        router.replace('/HomeScreen'); // Navigate to HomeScreen on success
       })
       .catch((error) => {
-        Alert.alert('Registration Failed', error.message);
+        Alert.alert('Registration Failed', error.message); // Show error message on failure
       });
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Register</Text>
+
+      {/* Email Input Field */}
       <TextInput
         placeholder="Email"
         style={styles.input}
         value={email}
-        autoCapitalize="none"
+        autoCapitalize="none" // Disable auto-capitalization for email
         onChangeText={setEmail}
       />
+
+      {/* Password Input Field */}
       <TextInput
         placeholder="Password"
         style={styles.input}
         value={password}
-        secureTextEntry
+        secureTextEntry // Mask password input
         onChangeText={setPassword}
       />
+
+      {/* Register Button */}
       <Button title="Register" onPress={handleRegister} />
+
+      {/* Link to Login Screen */}
       <Text style={styles.link} onPress={() => router.push('/Auth/LoginScreen')}>
         Already have an account? Login
       </Text>
@@ -44,6 +53,7 @@ export default function RegisterScreen() {
   );
 }
 
+// Styles for the Register screen
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: '#fff' },
   title: { fontSize: 24, marginBottom: 24, textAlign: 'center' },

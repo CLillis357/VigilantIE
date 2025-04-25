@@ -34,16 +34,6 @@ function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
 export default function HomeScreen() {
   const router = useRouter(); // Navigation hook from Expo Router
 
-  // Function to handle user logout
-  const handleLogout = async () => {
-    try {
-      await signOut(auth); // Sign out the user
-      router.replace('/Auth/AuthLanding'); // Redirect to the authentication landing page
-    } catch (error) {
-      Alert.alert('Logout Error', error.message); // Show an error alert if logout fails
-    }
-  };
-
   // State variables
   const [crimeReports, setCrimeReports] = useState([]); // List of crime reports
   const [selectedCrimeType, setSelectedCrimeType] = useState('All'); // Filter for crime type
@@ -54,6 +44,16 @@ export default function HomeScreen() {
   const [showUserFeed, setShowUserFeed] = useState(false); // Toggle for showing user-specific reports
 
   const mapRef = useRef(null); // Reference to the MapView component
+
+  // Function to handle user logout
+  const handleLogout = async () => {
+    try {
+      await signOut(auth); // Sign out the user
+      router.replace('/Auth/AuthLanding'); // Redirect to the authentication landing page
+    } catch (error) {
+      Alert.alert('Logout Error', error.message); // Show an error alert if logout fails
+    }
+  };
 
   // Fetch crime reports and user location when the component mounts
   useEffect(() => {

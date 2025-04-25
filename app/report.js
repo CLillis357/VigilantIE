@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   View,
@@ -16,9 +15,10 @@ import { db, auth } from '../src/config/firebase';
 import { collection, addDoc } from 'firebase/firestore';
 
 export default function ReportScreen() {
-  const router = useRouter();
-  const [selectedLocation, setSelectedLocation] = useState(null);
+  const router = useRouter(); // Navigation hook from Expo Router
+  const [selectedLocation, setSelectedLocation] = useState(null); // State to store the selected location
 
+  // List of crime types
   const crimes = [
     'Theft',
     'Breaking & Entering',
@@ -30,11 +30,13 @@ export default function ReportScreen() {
     'Suspicious Behaviour',
   ];
 
+  // Function to handle map press and set the selected location
   const handleMapPress = (event) => {
     const { latitude, longitude } = event.nativeEvent.coordinate;
     setSelectedLocation({ latitude, longitude });
   };
 
+  // Function to report a crime
   async function reportCrime(type) {
     if (!selectedLocation || !selectedLocation.latitude || !selectedLocation.longitude) {
       Alert.alert('Error', 'Please select a valid location.');
@@ -42,6 +44,7 @@ export default function ReportScreen() {
     }
 
     try {
+      // Add the crime report to the Firestore database
       await addDoc(collection(db, 'reports'), {
         type,
         latitude: selectedLocation.latitude,
@@ -51,7 +54,7 @@ export default function ReportScreen() {
       });
 
       Alert.alert('Reported', `Crime: ${type} has been submitted.`);
-      router.replace('/HomeScreen');
+      router.replace('/HomeScreen'); // Navigate back to the home screen
     } catch (error) {
       console.error('Error saving report:', error);
       Alert.alert('Error', 'Failed to report crime.');
@@ -63,6 +66,7 @@ export default function ReportScreen() {
       <StatusBar style="light" backgroundColor="transparent" translucent />
 
       <ScrollView contentContainerStyle={styles.scroll}>
+        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
             <Text style={styles.cancelText}>CANCEL</Text>
@@ -70,6 +74,7 @@ export default function ReportScreen() {
           <Text style={styles.headerTitle}>Report</Text>
         </View>
 
+        {/* Map for selecting a location */}
         <MapView
           style={styles.map}
           onPress={handleMapPress}
@@ -80,11 +85,13 @@ export default function ReportScreen() {
             longitudeDelta: 0.01,
           }}
         >
+          {/* Marker for the selected location */}
           {selectedLocation && (
             <Marker coordinate={selectedLocation} pinColor="red" />
           )}
         </MapView>
 
+        {/* Grid of crime types */}
         <View style={styles.grid}>
           {crimes.map((crime, index) => (
             <TouchableOpacity
@@ -101,9 +108,15 @@ export default function ReportScreen() {
   );
 }
 
+// Styles for the Report screen
 const styles = StyleSheet.create({
-  safeArea: {backgroundColor: 'red', flex: 1},
-  scroll: { paddingBottom: 30 },
+  safeArea: {
+    backgroundColor: 'red',
+    flex: 1,
+  },
+  scroll: {
+    paddingBottom: 30,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -111,7 +124,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'red',
     padding: 16,
   },
-  cancelText: { color: 'white', fontWeight: 'bold' },
+  cancelText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
   headerTitle: {
     color: 'white',
     fontWeight: 'bold',
@@ -119,8 +135,6 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     marginRight: 40,
-    
-    
   },
   map: {
     height: 250,
