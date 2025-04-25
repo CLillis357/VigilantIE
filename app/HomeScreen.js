@@ -138,6 +138,25 @@ export default function HomeScreen() {
     }
   };
 
+  // Filter crime reports based on the selected time range
+  const filteredCrimeReports = crimeReports.filter((crime) => {
+    const now = new Date();
+    const crimeTime = crime.timestamp.toDate ? crime.timestamp.toDate() : new Date(crime.timestamp); // Convert Firestore Timestamp to Date if necessary
+
+    switch (selectedTimeRange) {
+      case 'Last Hour':
+        return now - crimeTime <= 60 * 60 * 1000; // Crimes reported in the last hour
+      case 'Today':
+        return crimeTime.toDateString() === now.toDateString(); // Crimes reported today
+      case 'This Week':
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(now.getDate() - 7);
+        return crimeTime >= oneWeekAgo; // Crimes reported in the last 7 days
+      default:
+        return true; // 'All Time' or no filter
+    }
+  });
+
   // Get an emoji representation for a crime type
   const getEmojiForCrime = (crimeType) => {
     switch (crimeType) {
@@ -203,7 +222,7 @@ export default function HomeScreen() {
         )}
 
         {/* Markers for crime reports */}
-        {crimeReports
+        {filteredCrimeReports
           .filter(crime => selectedCrimeType === 'All' || crime.type === selectedCrimeType)
           .filter(crime =>
             currentLocation
