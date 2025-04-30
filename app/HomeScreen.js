@@ -37,7 +37,7 @@ export default function HomeScreen() {
   // State variables
   const [crimeReports, setCrimeReports] = useState([]); // List of crime reports
   const [selectedCrimeType, setSelectedCrimeType] = useState('All'); // Filter for crime type
-  const [showFilter, setShowFilter] = useState(false); // Toggle for crime type filter menu
+  
   const [selectedTimeRange, setSelectedTimeRange] = useState('All Time'); // Filter for time range
   const [showTimeMenu, setShowTimeMenu] = useState(false); // Toggle for time range menu
   const [currentLocation, setCurrentLocation] = useState(null); // User's current location
