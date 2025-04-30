@@ -253,23 +253,6 @@ export default function HomeScreen() {
           ))}
       </MapView>
 
-      {/* Dropdown menu for crime type filter */}
-      {showFilter && (
-        <View style={styles.dropdown}>
-          {['All', 'Theft', 'Breaking & Entering', 'Harassment', 'Assault', 'Antisocial Behaviour', 'Vandalism', 'Animal Abuse', 'Suspicious Behaviour'].map((type, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.dropdownItem}
-              onPress={() => {
-                setSelectedCrimeType(type);
-                setShowFilter(false);
-              }}
-            >
-              <Text>{type}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
 
       {/* Top buttons for navigation */}
       <View style={styles.topButtons}>
