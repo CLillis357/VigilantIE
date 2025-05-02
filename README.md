@@ -1,5 +1,5 @@
 
-#VigilantIE – Community Crime Reporting App
+# VigilantIE – Community Crime Reporting App
 A mobile-friendly React Native (Expo) app that empowers users to report, view, and track local crime incidents in real time. Features include:
 
 User authentication and secure report submission
